@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>StockLens — Indian Equity Research (MVP)</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#14202b;--mute:#667585;--line:#e3e8ee;--accent:#0b7a75;--accent2:#e0f2f1;--up:#1a8f4c;--down:#c8372d;--warn:#b7791f}
+*{box-sizing:border-box}body{margin:0;font:14px/1.45 "Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:#0f2a35;color:#fff;display:flex;align-items:center;gap:24px;padding:0 24px;height:56px;position:sticky;top:0;z-index:5}
+.logo{font-weight:700;font-size:18px;letter-spacing:.3px}.logo span{color:#4fd1c5}
+nav{display:flex;gap:4px;flex:1}nav button{background:none;border:0;color:#b8cbd3;padding:18px 14px;font:inherit;cursor:pointer;border-bottom:3px solid transparent}
+nav button.on{color:#fff;border-color:#4fd1c5}nav button:hover{color:#fff}
+#gsearch{padding:7px 10px;border-radius:6px;border:0;width:220px;font:inherit}
+.banner{background:#fff7e6;border-bottom:1px solid #f1d9a6;color:#7a5a12;padding:6px 24px;font-size:12px}
+main{max-width:1240px;margin:0 auto;padding:20px 24px 60px}
+.grid{display:grid;gap:16px}.g4{grid-template-columns:repeat(4,1fr)}.g2{grid-template-columns:1fr 1fr}.g31{grid-template-columns:2fr 1fr}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px}
+.card h3{margin:0 0 10px;font-size:14px;color:var(--mute);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.kpi .v{font-size:26px;font-weight:700}.kpi .s{color:var(--mute);font-size:12px}
+table{width:100%;border-collapse:collapse}th,td{padding:7px 8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child,th.l,td.l{text-align:left}th{font-size:12px;color:var(--mute);font-weight:600;background:#fafbfc}
+tr.click{cursor:pointer}tr.click:hover{background:var(--accent2)}
+.up{color:var(--up)}.down{color:var(--down)}.pill{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:600}
+.Leading{background:#d9f3e3;color:#13693a}.Improving{background:#dceefb;color:#175d8f}.Weakening{background:#fdecc8;color:#8a5a00}.Lagging{background:#fbdcd9;color:#a02a20}
+.ok{background:#d9f3e3;color:#13693a}.watch{background:#fdecc8;color:#8a5a00}.requires_investigation{background:#fbdcd9;color:#a02a20}
+.frow{display:flex;gap:6px;margin-bottom:8px;align-items:center}.frow select{min-width:0;flex:1}select,input,button.btn{font:inherit;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:#fff}
+button.btn{cursor:pointer}button.pri{background:var(--accent);color:#fff;border-color:var(--accent)}button.btn:hover{filter:brightness(.96)}
+.mute{color:var(--mute)}.bar{height:8px;background:#e8eef2;border-radius:4px;overflow:hidden;min-width:80px}.bar i{display:block;height:100%;background:var(--accent)}
+pre{background:#0f2a35;color:#bfeee9;padding:12px;border-radius:8px;overflow:auto;font-size:12px;margin:0}
+.chead{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px}.chead h2{margin:0;font-size:22px}
+.ratios{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}.ratios div{background:#f3f7f8;border-radius:8px;padding:8px 10px}.ratios b{display:block;font-size:16px}.ratios span{font-size:11px;color:var(--mute)}
+.tag{font-size:11px;background:#eef2f5;color:var(--mute);border-radius:4px;padding:2px 6px;margin-left:6px}
+.hidden{display:none}svg text{font-family:inherit}
+</style></head><body>
+<header><div class="logo">Stock<span>Lens</span></div>
+<nav id="nav"><button data-t="dash" class="on">Dashboard</button><button data-t="screener">Screener</button><button data-t="company">Company</button><button data-t="sectors">Sector Radar</button></nav>
+<input id="gsearch" placeholder="Search company or symbol…" list="symlist"><datalist id="symlist"></datalist></header>
+<div class="banner">⚠ Demo build: all companies, financials and prices are <b>synthetic test fixtures</b> (fictional). Data mode: Historical / end-of-day. Not investment advice.</div>
+<main>
+<section id="dash"></section><section id="screener" class="hidden"></section>
+<section id="company" class="hidden"></section><section id="sectors" class="hidden"></section>
+</main>
+<script>
+const $=s=>document.querySelector(s), api=p=>fetch('/api/v1'+p).then(r=>r.json());
+const f=(v,d=2)=>v==null?'—':Number(v).toLocaleString('en-IN',{maximumFractionDigits:d,minimumFractionDigits:d});
+const cls=v=>v>0?'up':v<0?'down':'';
+function line(data,{w=700,h=220,key='v',key2=null,fmt=f}={}){
+  const vals=data.map(d=>d[key]),all=key2?vals.concat(data.map(d=>d[key2]).filter(x=>x!=null)):vals;
+  const mn=Math.min(...all),mx=Math.max(...all),pad=(mx-mn)*.08||1,lo=mn-pad,hi=mx+pad,L=52,B=22;
+  const X=i=>L+(w-L-8)*i/(data.length-1),Y=v=>8+(h-8-B)*(1-(v-lo)/(hi-lo));
+  const path=k=>data.map((d,i)=>d[k]==null?null:(X(i).toFixed(1)+','+Y(d[k]).toFixed(1))).filter(Boolean).map((p,i)=>(i?'L':'M')+p).join(' ');
+  let g='';for(let i=0;i<=4;i++){const v=lo+(hi-lo)*i/4;g+=`<line x1="${L}" x2="${w-8}" y1="${Y(v)}" y2="${Y(v)}" stroke="#e8edf1"/><text x="${L-6}" y="${Y(v)+4}" font-size="10" text-anchor="end" fill="#667585">${fmt(v,0)}</text>`}
+  const step=Math.floor(data.length/5);for(let i=0;i<data.length;i+=step)g+=`<text x="${X(i)}" y="${h-6}" font-size="10" fill="#667585" text-anchor="middle">${data[i].date.slice(0,7)}</text>`;
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%">${g}<path d="${path(key)}" fill="none" stroke="#0b7a75" stroke-width="1.8"/>${key2?`<path d="${path(key2)}" fill="none" stroke="#e08a1e" stroke-width="1.3" stroke-dasharray="4 3"/>`:''}</svg>`}
+async function dash(){
+  const [mk,dq]=await Promise.all([api('/market/overview'),api('/data-quality')]);
+  const row=r=>`<tr class="click" onclick="openCo('${r.symbol}')"><td>${r.symbol}</td><td>${f(r.price)}</td><td class="${cls(r.change_pct)}">${r.change_pct>0?'+':''}${f(r.change_pct)}%</td></tr>`;
+  $('#dash').innerHTML=`<div class="grid g4"><div class="card kpi"><h3>Advancers</h3><div class="v up">${mk.advancers}</div><div class="s">of 40 companies</div></div>
+  <div class="card kpi"><h3>Decliners</h3><div class="v down">${mk.decliners}</div><div class="s">as of ${mk.as_of}</div></div>
+  <div class="card kpi"><h3>Above 50-DMA</h3><div class="v">${f(mk.pct_above_50dma,1)}%</div><div class="s">market breadth</div></div>
+  <div class="card kpi"><h3>Data mode</h3><div class="v" style="font-size:18px">Historical / EOD</div><div class="s">live feed: licence pending</div></div></div>
+  <div class="grid g31" style="margin-top:16px"><div class="card"><h3>StockLens Equal-Weight Index (rebased 100)</h3>${line(mk.index.map(d=>({date:d.date,v:d.value})))}</div>
+  <div class="card"><h3>Data quality</h3><table>${dq.map(d=>`<tr><td class="l">${d.dataset}</td><td><span class="pill ${d.status=='Verified'?'ok':'watch'}">${d.status}</span></td></tr>`).join('')}</table><div class="mute" style="font-size:12px;margin-top:8px">Each dataset carries source, period and freshness status.</div></div></div>
+  <div class="grid g2" style="margin-top:16px"><div class="card"><h3>Top gainers (1D)</h3><table>${mk.gainers.map(row).join('')}</table></div><div class="card"><h3>Top losers (1D)</h3><table>${mk.losers.map(row).join('')}</table></div></div>`}
+let FIELDS=[];const PRESETS={
+ 'High-growth quality':{filters:[{field:'sales_growth_3y',operator:'>',value:10},{field:'roce',operator:'>',value:20},{field:'debt_equity',operator:'<',value:0.5},{field:'promoter_holding',operator:'>',value:40}],logic:'AND',sort:{field:'roce',direction:'DESC'},limit:100},
+ 'Value + momentum':{filters:[{field:'pe',operator:'<',value:25},{field:'ret_3m',operator:'>',value:5},{field:'rsi_14',operator:'between',value:[45,75]}],logic:'AND',sort:{field:'ret_3m',direction:'DESC'},limit:100},
+ 'Cash-rich compounders':{filters:[{field:'cfo_pat',operator:'>',value:1},{field:'roe',operator:'>',value:15},{field:'interest_coverage',operator:'>',value:8}],logic:'AND',sort:{field:'roe',direction:'DESC'},limit:100}};
+let rows=[];
+function frow(r={field:'roce',operator:'>',value:15}){const d=document.createElement('div');d.className='frow';
+ d.innerHTML=`<select class="ff">${FIELDS.filter(x=>x.key!='sector').map(x=>`<option value="${x.key}" ${x.key==r.field?'selected':''}>${x.label}</option>`).join('')}</select>
+ <select class="fo">${['>','<','>=','<=','==','!=','between'].map(o=>`<option ${o==r.operator?'selected':''}>${o}</option>`).join('')}</select>
+ <input class="fv" value="${Array.isArray(r.value)?r.value.join(','):r.value}" style="width:84px"><button class="btn" onclick="this.parentNode.remove()">✕</button>`;$('#frows').appendChild(d)}
+function readQ(){const filters=[...document.querySelectorAll('.frow')].map(d=>{const op=d.querySelector('.fo').value,raw=d.querySelector('.fv').value;
+  return {field:d.querySelector('.ff').value,operator:op,value:op=='between'?raw.split(',').map(Number):Number(raw)}});
+  const sf=$('#sortf').value;return {filters,logic:$('#logic').value,sort:sf?{field:sf,direction:$('#sortd').value}:{},limit:100}}
+async function runScreen(q){q=q||readQ();$('#qjson').textContent=JSON.stringify(q,null,2);
+ const r=await fetch('/api/v1/screener/query',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(q)});const j=await r.json();
+ if(!r.ok){$('#res').innerHTML=`<div class="down">Query error: ${j.detail}</div>`;return}
+ rows=j.results;const cols=['market_cap','pe','roce','roe','debt_equity','sales_growth_3y','ret_3m'];
+ $('#res').innerHTML=`<div class="mute" style="margin-bottom:8px"><b>${j.count}</b> companies match</div><table><tr><th>Company</th>${cols.map(c=>`<th>${FIELDS.find(x=>x.key==c).label.replace('(Rs Cr)','Cr')}</th>`).join('')}</tr>
+ ${rows.map(r=>`<tr class="click" onclick="openCo('${r.symbol}')"><td><b>${r.symbol}</b><div class="mute" style="font-size:11px">${r.sector}</div></td>${cols.map(c=>`<td>${f(r[c],c=='market_cap'?0:2)}</td>`).join('')}</tr>`).join('')}</table>`}
+async function screener(){FIELDS=await api('/screener/fields');
+ $('#screener').innerHTML=`<div class="grid" style="grid-template-columns:440px minmax(0,1fr)"><div class="card"><h3>Query builder</h3>
+ <div style="margin-bottom:10px">${Object.keys(PRESETS).map(p=>`<button class="btn" style="margin:0 6px 6px 0" onclick="preset('${p}')">${p}</button>`).join('')}</div>
+ <div id="frows"></div><button class="btn" onclick="frow()">+ Add filter</button>
+ <div class="frow" style="margin-top:12px">Match <select id="logic"><option>AND</option><option>OR</option></select> Sort <select id="sortf"><option value="">—</option>${FIELDS.filter(x=>x.key!='sector').map(x=>`<option value="${x.key}">${x.label}</option>`).join('')}</select><select id="sortd"><option>DESC</option><option>ASC</option></select></div>
+ <div class="frow"><button class="btn pri" onclick="runScreen()">Run screen</button><button class="btn" onclick="saveScreen()">Save</button><button class="btn" onclick="csv()">Export CSV</button></div>
+ <h3 style="margin-top:14px">Query JSON (sent to API)</h3><pre id="qjson">{}</pre></div><div class="card" id="res" style="overflow:auto"><div class="mute">Pick a preset or build filters, then run.</div></div></div>`;preset('High-growth quality')}
+function preset(n){const q=PRESETS[n];$('#frows').innerHTML='';q.filters.forEach(frow);$('#logic').value=q.logic;$('#sortf').value=q.sort.field;$('#sortd').value=q.sort.direction;runScreen(q)}
+async function saveScreen(){const n=prompt('Name this screen','My screen');if(!n)return;await fetch('/api/v1/screener/saved',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n,query:readQ()})});alert('Saved')}
+function csv(){if(!rows.length)return;const k=Object.keys(rows[0]);const t=[k.join(',')].concat(rows.map(r=>k.map(x=>r[x]).join(','))).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv'}));a.download='stocklens_screen.csv';a.click()}
+async function openCo(sym){show('company');$('#company').innerHTML='<div class="mute">Loading…</div>';
+ const [o,fin,px,sh,eq,gd]=await Promise.all([api(`/companies/${sym}/overview`),api(`/companies/${sym}/financials`),api(`/companies/${sym}/prices?days=250`),api(`/companies/${sym}/shareholding`),api(`/companies/${sym}/earnings-quality`),api(`/companies/${sym}/guidance`)]);
+ if(o.detail){$('#company').innerHTML=`<div class="down">${o.detail}</div>`;return}
+ const r=o.ratios,tiles=[['Market cap (₹ Cr)',f(r.market_cap,0)],['P/E',f(r.pe,1)],['ROCE %',f(r.roce,1)],['ROE %',f(r.roe,1)],['Sales growth 1Y %',f(r.sales_growth_1y,1)],['PAT growth 1Y %',f(r.profit_growth_1y,1)],['Debt/Equity',f(r.debt_equity)],['EBITDA margin %',f(r.ebitda_margin,1)],['CFO/PAT',f(r.cfo_pat)],['Promoter %',f(r.promoter_holding,1)],['RSI (14)',f(r.rsi_14,0)],['EV/EBITDA',f(r.ev_ebitda,1)]];
+ const fr=(label,k,d=0)=>`<tr><td class="l">${label}</td>${fin.map(x=>`<td>${f(x[k],d)}</td>`).join('')}</tr>`;
+ $('#company').innerHTML=`<div class="chead"><div><h2>${o.company_name}</h2><span class="mute">NSE: ${o.symbol} · ISIN ${o.isin} · ${o.sector}</span><span class="tag">${o.data_mode}</span><span class="tag">as of ${o.as_of}</span></div><div style="text-align:right"><div style="font-size:28px;font-weight:700">₹${f(r.price)}</div><span class="${cls(r.ret_1m)}">${f(r.ret_1m,1)}% 1M</span></div></div>
+ <div class="ratios" style="margin-bottom:16px">${tiles.map(t=>`<div><span>${t[0]}</span><b>${t[1]}</b></div>`).join('')}</div>
+ <div class="grid g31"><div class="card"><h3>Price & 50-DMA (1Y)</h3>${line(px,{key:'close',key2:'sma50'})}</div>
+ <div class="card"><h3>Earnings quality <span class="pill ${eq.status}">${eq.status.replace('_',' ')}</span></h3>${eq.flags.length?'<ul style="margin:0;padding-left:18px">'+eq.flags.map(x=>`<li>${x}</li>`).join('')+'</ul>':'<div class="mute">No rule flags triggered.</div>'}<div class="mute" style="font-size:11px;margin-top:8px">${eq.disclaimer}</div></div></div>
+ <div class="card" style="margin-top:16px;overflow:auto"><h3>Annual financials (₹ Cr, consolidated)</h3><table><tr><th>Item</th>${fin.map(x=>`<th>FY${x.fiscal_year}</th>`).join('')}</tr>${fr('Revenue','revenue')}${fr('EBITDA','ebitda')}${fr('Interest','interest')}${fr('PAT','pat')}${fr('EPS (₹)','eps',2)}${fr('Equity','total_equity')}${fr('Debt','total_debt')}${fr('Operating cash flow','cfo')}${fr('Receivables','receivables')}</table></div>
+ <div class="grid g2" style="margin-top:16px"><div class="card"><h3>Shareholding (%)</h3><table><tr><th>Period</th><th>Promoter</th><th>FII</th><th>DII</th><th>Public</th><th>Pledged</th></tr>${sh.map(s=>`<tr><td>${s.period_end}</td><td>${f(s.promoter,1)}</td><td>${f(s.fii,1)}</td><td>${f(s.dii,1)}</td><td>${f(s.public,1)}</td><td>${f(s.pledged,1)}</td></tr>`).join('')}</table></div>
+ <div class="card"><h3>Management guidance vs actual</h3>${gd.length?gd.map(g=>`<div>${g.metric} ${g.period}: guided <b>${g.low}–${g.high}%</b>, actual <b>${g.actual}%</b> <span class="pill ${g.status=='missed'?'Lagging':g.status=='beat'?'Leading':'Improving'}">${g.status}</span><div class="mute" style="font-size:12px">Deviation vs midpoint: ${g.deviation_vs_midpoint} pts · ${g.source}</div></div>`).join(''):'<div class="mute">No guidance recorded.</div>'}</div></div>`}
+async function sectors(){const j=await api('/sectors/rankings');const S=j.sectors;
+ const W=520,H=300,xs=S.map(s=>s.rs),ys=S.map(s=>s.rs-s.rs_prev),xm=Math.max(...xs.map(Math.abs))*1.2,ym=Math.max(...ys.map(Math.abs))*1.2,px=v=>W/2+v/xm*(W/2-30),py=v=>H/2-v/ym*(H/2-24);
+ const col={Leading:'#1a8f4c',Improving:'#2379b4',Weakening:'#d99000',Lagging:'#c8372d'};
+ const quad=`<svg viewBox="0 0 ${W} ${H}" width="100%"><rect x="${W/2}" y="0" width="${W/2}" height="${H/2}" fill="#eaf7ef"/><rect x="0" y="0" width="${W/2}" height="${H/2}" fill="#e8f2fb"/><rect x="${W/2}" y="${H/2}" width="${W/2}" height="${H/2}" fill="#fff4dc"/><rect x="0" y="${H/2}" width="${W/2}" height="${H/2}" fill="#fbe9e7"/>
+ <text x="${W-8}" y="16" text-anchor="end" font-size="11" fill="#13693a">LEADING</text><text x="8" y="16" font-size="11" fill="#175d8f">IMPROVING</text><text x="${W-8}" y="${H-8}" text-anchor="end" font-size="11" fill="#8a5a00">WEAKENING</text><text x="8" y="${H-8}" font-size="11" fill="#a02a20">LAGGING</text>
+ <line x1="${W/2}" x2="${W/2}" y1="0" y2="${H}" stroke="#9aa8b3"/><line x1="0" x2="${W}" y1="${H/2}" y2="${H/2}" stroke="#9aa8b3"/>
+ ${S.map((s,i)=>{const x=px(s.rs),y=py(s.rs-s.rs_prev),left=x>W-120;return `<circle cx="${x}" cy="${y}" r="6" fill="${col[s.phase]}"/><text x="${left?x-9:x+9}" y="${y+(i%2?-8:12)}" text-anchor="${left?'end':'start'}" font-size="10.5" fill="#14202b">${s.sector}</text>`}).join('')}</svg>`;
+ $('#sectors').innerHTML=`<div class="grid" style="grid-template-columns:1.25fr 1fr"><div class="card" style="overflow:auto"><h3>Sector momentum score (0–100)</h3><table><tr><th>#</th><th class="l">Sector</th><th>Score</th><th class="l"></th><th>1M %</th><th>3M %</th><th>Breadth</th><th>Phase</th></tr>
+ ${S.map(s=>`<tr><td>${s.rank}</td><td class="l"><b>${s.sector}</b></td><td>${f(s.score,1)}</td><td class="l"><div class="bar"><i style="width:${s.score}%"></i></div></td><td class="${cls(s.r1)}">${f(s.r1,1)}</td><td class="${cls(s.r3)}">${f(s.r3,1)}</td><td>${f(s.breadth,0)}%</td><td><span class="pill ${s.phase}">${s.phase}</span></td></tr>`).join('')}</table>
+ <div class="mute" style="font-size:12px;margin-top:10px">SMS = 0.25·R1 + 0.20·R3 + 0.10·R6 + 0.15·Breadth + 0.15·Earnings + 0.10·Volume + 0.05·RS. ${j.note}</div></div>
+ <div class="card"><h3>Relative-strength rotation map</h3>${quad}<div class="mute" style="font-size:12px">X: 3M relative strength vs equal-weight universe. Y: change in RS over the last month.</div></div></div>`}
+function show(t){document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hidden',s.id!=t));document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t==t))}
+const loaded={};async function go(t){show(t);if(loaded[t]&&t!='company')return;if(t=='dash')await dash();if(t=='screener')await screener();if(t=='sectors')await sectors();if(t=='company'&&!$('#company').innerHTML)await openCo('AURORAIN');loaded[t]=1}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>go(b.dataset.t));
+$('#gsearch').addEventListener('change',e=>{const v=e.target.value.trim().split(' ')[0].toUpperCase();if(v)openCo(v)});
+api('/companies?limit=100').then(l=>$('#symlist').innerHTML=l.map(c=>`<option value="${c.symbol}">${c.company_name}</option>`).join(''));
+go('dash');
+</script></body></html>

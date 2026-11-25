@@ -1,0 +1,590 @@
+{
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Linux-6.18.44-fc-v726-x86_64-with-glibc2.39",
+    "cpus": 1,
+    "db": "SQLite (in-process)",
+    "note": "In-process TestClient; no network latency; synthetic data"
+  },
+  "formula_accuracy": {
+    "values_checked": 560,
+    "values_matching": 560,
+    "pct": 100.0,
+    "max_rel_error": 3.0952095745059713e-07,
+    "ratios": 14,
+    "companies": 40
+  },
+  "screener_accuracy": {
+    "random_queries": 300,
+    "exact_match": 300,
+    "precision": 1.0,
+    "recall": 1.0,
+    "true_pos": 6117,
+    "false_pos": 0,
+    "false_neg": 0
+  },
+  "rsi_accuracy": {
+    "series": 10,
+    "max_abs_error_rsi_points": 0.0,
+    "mean_abs_error": 0.0
+  },
+  "earnings_quality": {
+    "companies": 40,
+    "injected": 4,
+    "tp": 4,
+    "fp": 0,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "caveat": "Labelled synthetic anomalies validate rule logic only, not real-world predictive accuracy."
+  },
+  "api_latency": [
+    {
+      "endpoint": "/api/v1/health",
+      "p50_ms": 2.9,
+      "p95_ms": 3.6,
+      "max_ms": 5.9
+    },
+    {
+      "endpoint": "/api/v1/companies",
+      "p50_ms": 3.9,
+      "p95_ms": 4.2,
+      "max_ms": 5.1
+    },
+    {
+      "endpoint": "/api/v1/companies/{symbol}/overview",
+      "p50_ms": 3.5,
+      "p95_ms": 3.9,
+      "max_ms": 5.8
+    },
+    {
+      "endpoint": "/api/v1/companies/{symbol}/financials",
+      "p50_ms": 3.6,
+      "p95_ms": 3.9,
+      "max_ms": 4.3
+    },
+    {
+      "endpoint": "/api/v1/companies/{symbol}/prices",
+      "p50_ms": 8.9,
+      "p95_ms": 9.6,
+      "max_ms": 10.4
+    },
+    {
+      "endpoint": "/api/v1/companies/{symbol}/earnings-quality",
+      "p50_ms": 3.4,
+      "p95_ms": 4.4,
+      "max_ms": 5.5
+    },
+    {
+      "endpoint": "/api/v1/market/overview",
+      "p50_ms": 52.8,
+      "p95_ms": 149.4,
+      "max_ms": 159.8
+    },
+    {
+      "endpoint": "/api/v1/sectors/rankings",
+      "p50_ms": 70.2,
+      "p95_ms": 170.0,
+      "max_ms": 199.9
+    },
+    {
+      "endpoint": "POST /api/v1/screener/query",
+      "p50_ms": 6.6,
+      "p95_ms": 7.0,
+      "max_ms": 9.3
+    }
+  ],
+  "screener_scaling": [
+    {
+      "companies": 40,
+      "p50_ms": 0.9,
+      "p95_ms": 1.1
+    },
+    {
+      "companies": 1000,
+      "p50_ms": 3.9,
+      "p95_ms": 4.4
+    },
+    {
+      "companies": 5000,
+      "p50_ms": 5.0,
+      "p95_ms": 5.4
+    },
+    {
+      "companies": 20000,
+      "p50_ms": 6.1,
+      "p95_ms": 7.3
+    }
+  ],
+  "ratio_refresh": {
+    "companies": 40,
+    "price_rows": 20800,
+    "seconds": 0.22,
+    "companies_per_sec": 181.9
+  },
+  "sector_ranking_ms": 57.4,
+  "tests": {
+    "total": 90,
+    "passed": 90,
+    "duration_s": 2.199,
+    "cases": [
+      {
+        "id": "test_TC50_health",
+        "file": "test_api",
+        "passed": true
+      },
+      {
+        "id": "test_TC51_company_search_by_name",
+        "file": "test_api",
+        "passed": true
+      },
+      {
+        "id": "test_TC52_company_search_by_sector",
+        "file": "test_api",
+        "passed": true
+      },
+      {
+        "id": "test_TC53_unknown_company_404",
+        "file": "test_api",
+        "passed": true
+      },
+      {
+        "id": "test_TC54_overview_contains_data_mode_and_ratios",
+        "file": "test_api",
+        "passed": true
+      },
+      {
+        "id": "test_TC55_financials_six_years_with_filing_dates",
+        "file": "test_api",
+        "passed": true
+      },
+      {
+        "id": "test_TC56_prices_with_indicators",
+        "file": "test_api",
+        "passed": true
+      },
+      {
+        "id": "test_TC57_prices_days_validation",
+        "file": "test_api",
+        "passed": true
+      },
+      {
+        "id": "test_TC58_screener_fields_catalogue",
+        "file": "test_api",
+        "passed": true
+      },
+      {
+        "id": "test_TC59_screener_query_ok",
+        "file": "test_api",
+        "passed": true
+      },
+      {
+        "id": "test_TC60_screener_bad_query_422",
+        "file": "test_api",
+        "passed": true
+      },
+      {
+        "id": "test_TC61_save_and_list_screen",
+        "file": "test_api",
+        "passed": true
+      },
+      {
+        "id": "test_TC62_cannot_save_invalid_screen",
+        "file": "test_api",
+        "passed": true
+      },
+      {
+        "id": "test_TC63_sector_rankings_eight_sectors",
+        "file": "test_api",
+        "passed": true
+      },
+      {
+        "id": "test_TC64_market_overview",
+        "file": "test_api",
+        "passed": true
+      },
+      {
+        "id": "test_TC65_shareholding_sums_to_100",
+        "file": "test_api",
+        "passed": true
+      },
+      {
+        "id": "test_TC66_data_quality_includes_unlicensed_live_feed",
+        "file": "test_api",
+        "passed": true
+      },
+      {
+        "id": "test_TC67_guidance_statuses_valid",
+        "file": "test_api",
+        "passed": true
+      },
+      {
+        "id": "test_TC90_isin_unique_and_12_chars",
+        "file": "test_data_pit",
+        "passed": true
+      },
+      {
+        "id": "test_TC91_prices_positive_and_complete",
+        "file": "test_data_pit",
+        "passed": true
+      },
+      {
+        "id": "test_TC92_pnl_identity_pbt",
+        "file": "test_data_pit",
+        "passed": true
+      },
+      {
+        "id": "test_TC93_pat_equals_pbt_minus_tax",
+        "file": "test_data_pit",
+        "passed": true
+      },
+      {
+        "id": "test_TC94_eps_consistent_with_shares",
+        "file": "test_data_pit",
+        "passed": true
+      },
+      {
+        "id": "test_TC95_every_company_has_six_years",
+        "file": "test_data_pit",
+        "passed": true
+      },
+      {
+        "id": "test_TC96_point_in_time_excludes_unfiled_results",
+        "file": "test_data_pit",
+        "passed": true
+      },
+      {
+        "id": "test_TC97_point_in_time_snapshot_differs_and_restores",
+        "file": "test_data_pit",
+        "passed": true
+      },
+      {
+        "id": "test_TC98_snapshot_zero_division_safe",
+        "file": "test_data_pit",
+        "passed": true
+      },
+      {
+        "id": "test_TC01_safe_divide_normal",
+        "file": "test_financial",
+        "passed": true
+      },
+      {
+        "id": "test_TC02_safe_divide_zero_denominator",
+        "file": "test_financial",
+        "passed": true
+      },
+      {
+        "id": "test_TC03_safe_divide_none_inputs",
+        "file": "test_financial",
+        "passed": true
+      },
+      {
+        "id": "test_TC04_growth_positive",
+        "file": "test_financial",
+        "passed": true
+      },
+      {
+        "id": "test_TC05_growth_negative_base_is_undefined",
+        "file": "test_financial",
+        "passed": true
+      },
+      {
+        "id": "test_TC06_growth_zero_base",
+        "file": "test_financial",
+        "passed": true
+      },
+      {
+        "id": "test_TC07_cagr_known_value",
+        "file": "test_financial",
+        "passed": true
+      },
+      {
+        "id": "test_TC08_cagr_invalid_inputs",
+        "file": "test_financial",
+        "passed": true
+      },
+      {
+        "id": "test_TC09_margins",
+        "file": "test_financial",
+        "passed": true
+      },
+      {
+        "id": "test_TC10_roe_uses_average_equity",
+        "file": "test_financial",
+        "passed": true
+      },
+      {
+        "id": "test_TC11_roce_uses_average_capital_employed",
+        "file": "test_financial",
+        "passed": true
+      },
+      {
+        "id": "test_TC12_debt_equity_negative_equity_undefined",
+        "file": "test_financial",
+        "passed": true
+      },
+      {
+        "id": "test_TC13_interest_coverage_zero_interest",
+        "file": "test_financial",
+        "passed": true
+      },
+      {
+        "id": "test_TC14_cfo_pat_loss_making_undefined",
+        "file": "test_financial",
+        "passed": true
+      },
+      {
+        "id": "test_TC15_pe_negative_eps_undefined",
+        "file": "test_financial",
+        "passed": true
+      },
+      {
+        "id": "test_TC16_peg_requires_positive_growth",
+        "file": "test_financial",
+        "passed": true
+      },
+      {
+        "id": "test_TC17_ev_ebitda_known",
+        "file": "test_financial",
+        "passed": true
+      },
+      {
+        "id": "test_TC18_ttm_is_sum_of_four_quarters_not_x4",
+        "file": "test_financial",
+        "passed": true
+      },
+      {
+        "id": "test_TC19_ttm_needs_exactly_four_quarters",
+        "file": "test_financial",
+        "passed": true
+      },
+      {
+        "id": "test_TC20_compute_company_ratios_hand_checked",
+        "file": "test_financial",
+        "passed": true
+      },
+      {
+        "id": "test_TC21_missing_history_gives_none_not_crash",
+        "file": "test_financial",
+        "passed": true
+      },
+      {
+        "id": "test_TC22_rsi_monotonic_up_is_100",
+        "file": "test_indicators",
+        "passed": true
+      },
+      {
+        "id": "test_TC23_rsi_flat_is_50",
+        "file": "test_indicators",
+        "passed": true
+      },
+      {
+        "id": "test_TC24_rsi_bounded_0_100",
+        "file": "test_indicators",
+        "passed": true
+      },
+      {
+        "id": "test_TC25_rsi_matches_wilder_reference_loop",
+        "file": "test_indicators",
+        "passed": true
+      },
+      {
+        "id": "test_TC26_sma_known",
+        "file": "test_indicators",
+        "passed": true
+      },
+      {
+        "id": "test_TC27_ema_responds_faster_than_sma",
+        "file": "test_indicators",
+        "passed": true
+      },
+      {
+        "id": "test_TC28_period_return",
+        "file": "test_indicators",
+        "passed": true
+      },
+      {
+        "id": "test_TC29_period_return_insufficient_history",
+        "file": "test_indicators",
+        "passed": true
+      },
+      {
+        "id": "test_TC30_greater_than_matches_oracle",
+        "file": "test_screener",
+        "passed": true
+      },
+      {
+        "id": "test_TC31_less_than_matches_oracle",
+        "file": "test_screener",
+        "passed": true
+      },
+      {
+        "id": "test_TC32_between_inclusive",
+        "file": "test_screener",
+        "passed": true
+      },
+      {
+        "id": "test_TC33_and_logic",
+        "file": "test_screener",
+        "passed": true
+      },
+      {
+        "id": "test_TC34_or_logic",
+        "file": "test_screener",
+        "passed": true
+      },
+      {
+        "id": "test_TC35_sort_descending",
+        "file": "test_screener",
+        "passed": true
+      },
+      {
+        "id": "test_TC36_sort_ascending",
+        "file": "test_screener",
+        "passed": true
+      },
+      {
+        "id": "test_TC37_limit_respected",
+        "file": "test_screener",
+        "passed": true
+      },
+      {
+        "id": "test_TC38_sector_filter",
+        "file": "test_screener",
+        "passed": true
+      },
+      {
+        "id": "test_TC39_null_values_never_match",
+        "file": "test_screener",
+        "passed": true
+      },
+      {
+        "id": "test_TC40_empty_filters_returns_universe",
+        "file": "test_screener",
+        "passed": true
+      },
+      {
+        "id": "test_TC41_unknown_field_rejected",
+        "file": "test_screener",
+        "passed": true
+      },
+      {
+        "id": "test_TC42_unknown_operator_rejected",
+        "file": "test_screener",
+        "passed": true
+      },
+      {
+        "id": "test_TC43_sql_injection_value_rejected",
+        "file": "test_screener",
+        "passed": true
+      },
+      {
+        "id": "test_TC44_sql_injection_field_rejected",
+        "file": "test_screener",
+        "passed": true
+      },
+      {
+        "id": "test_TC45_bool_value_rejected",
+        "file": "test_screener",
+        "passed": true
+      },
+      {
+        "id": "test_TC46_limit_bounds",
+        "file": "test_screener",
+        "passed": true
+      },
+      {
+        "id": "test_TC47_between_needs_two_numbers",
+        "file": "test_screener",
+        "passed": true
+      },
+      {
+        "id": "test_TC48_blueprint_example_query_runs",
+        "file": "test_screener",
+        "passed": true
+      },
+      {
+        "id": "test_TC70_weights_sum_to_one",
+        "file": "test_sectors_quality",
+        "passed": true
+      },
+      {
+        "id": "test_TC71_minmax_bounds",
+        "file": "test_sectors_quality",
+        "passed": true
+      },
+      {
+        "id": "test_TC72_minmax_constant_series_neutral",
+        "file": "test_sectors_quality",
+        "passed": true
+      },
+      {
+        "id": "test_TC73_phase_leading",
+        "file": "test_sectors_quality",
+        "passed": true
+      },
+      {
+        "id": "test_TC74_phase_improving",
+        "file": "test_sectors_quality",
+        "passed": true
+      },
+      {
+        "id": "test_TC75_phase_weakening",
+        "file": "test_sectors_quality",
+        "passed": true
+      },
+      {
+        "id": "test_TC76_phase_lagging",
+        "file": "test_sectors_quality",
+        "passed": true
+      },
+      {
+        "id": "test_TC77_sector_scores_in_range_and_ranked",
+        "file": "test_sectors_quality",
+        "passed": true
+      },
+      {
+        "id": "test_TC78_insufficient_data",
+        "file": "test_sectors_quality",
+        "passed": true
+      },
+      {
+        "id": "test_TC79_healthy_company_not_flagged",
+        "file": "test_sectors_quality",
+        "passed": true
+      },
+      {
+        "id": "test_TC80_blueprint_example_flagged",
+        "file": "test_sectors_quality",
+        "passed": true
+      },
+      {
+        "id": "test_TC81_all_injected_anomalies_detected",
+        "file": "test_sectors_quality",
+        "passed": true
+      },
+      {
+        "id": "test_TC82_false_positive_rate_low",
+        "file": "test_sectors_quality",
+        "passed": true
+      },
+      {
+        "id": "test_TC83_guidance_beat_met_missed",
+        "file": "test_sectors_quality",
+        "passed": true
+      },
+      {
+        "id": "test_TC84_guidance_deviation_vs_midpoint",
+        "file": "test_sectors_quality",
+        "passed": true
+      }
+    ]
+  },
+  "data": {
+    "companies": 40,
+    "sectors": 8,
+    "financial_rows": 240,
+    "price_rows": 20800,
+    "screener_fields": 29
+  }
+}

@@ -1,0 +1,19 @@
+services:
+  db:
+    image: timescale/timescaledb:latest-pg16
+    container_name: stocklens_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: stocklens
+      POSTGRES_PASSWORD: change_this_password
+      POSTGRES_DB: stocklens
+    ports: ["5432:5432"]
+    volumes: [stocklens_data:/var/lib/postgresql/data]
+  api:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql+psycopg://stocklens:change_this_password@db:5432/stocklens
+    depends_on: [db]
+    ports: ["8000:8000"]
+volumes:
+  stocklens_data:
